@@ -1,2 +1,2 @@
 # pycalc
-Calculadora em Python e Tkinter
+Calculadora em Python 3 e Tkinter
