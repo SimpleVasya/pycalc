@@ -36,14 +36,15 @@ class Calc():
         self.bt7 = tk.Button(self.parent, text="7", command=lambda: self.button_press('7'))
         self.bt8 = tk.Button(self.parent, text="8", command=lambda: self.button_press('8'))
         self.bt9 = tk.Button(self.parent, text="9", command=lambda: self.button_press('9'))
-        self.bt_mais = tk.Button(self.parent, text="+", command=lambda: self.button_press('+'))
-        self.bt_menos = tk.Button(self.parent, text="-", command=lambda: self.button_press('-'))
-        self.bt_mutiplica = tk.Button(self.parent, text="*", command=lambda: self.button_press('*'))
-        self.bt_divide = tk.Button(self.parent, text="/", command=lambda: self.button_press('/'))
-        self.bt_ponto = tk.Button(self.parent, text=".", command=lambda: self.button_press('.'))
-        self.bt_igual = tk.Button(self.parent, text="=", command=lambda: self.button_press('='))
-        self.bt_limpar = tk.Button(self.parent, text="Limpar", command=self.limpar)
-        self.bt_sair = tk.Button(self.parent, text="Sair(Esc)", command=self.parent.destroy)
+        self.bt_addition = tk.Button(self.parent, text="+", command=lambda: self.button_press('+'))
+        self.bt_subtraction = tk.Button(self.parent, text="-", command=lambda: self.button_press('-'))
+        self.bt_mutiplication = tk.Button(self.parent, text="*", command=lambda: self.button_press('*'))
+        self.bt_division = tk.Button(self.parent, text="/", command=lambda: self.button_press('/'))
+        self.bt_decimal_point = tk.Button(self.parent, text=".", command=lambda: self.button_press('.'))
+        self.bt_equal = tk.Button(self.parent, text="=", command=lambda: self.button_press('='))
+        self.bt_clear = tk.Button(self.parent, text="Limpar", command=self.clear)
+        self.bt_quit = tk.Button(self.parent, text="Sair(Esc)", command=self.parent.destroy)
+        self.bt_delete = tk.Button(self.parent, text="Del", command=self.delete)
         self.parent.bind("<Escape>", lambda event=None: self.parent.destroy())
     
     def run(self):
@@ -63,20 +64,32 @@ class Calc():
         self.bt7.grid(row=1, column=0, sticky="ewns", padx=2, pady=2)
         self.bt8.grid(row=1, column=1, sticky="ewns", padx=2, pady=2)
         self.bt9.grid(row=1, column=2, sticky="ewns", padx=2, pady=2)
-        self.bt_mais.grid(row=3, column=3, sticky="ewns", padx=2, pady=2)
-        self.bt_menos.grid(row=2, column=3, sticky="ewns", padx=2, pady=2)
-        self.bt_divide.grid(row=4, column=3, sticky="ewns", padx=2, pady=2)
-        self.bt_mutiplica.grid(row=1, column=3, sticky="ewns", padx=2, pady=2)
-        self.bt_ponto.grid(row=4, column=1, sticky="ewns", padx=2, pady=2)
-        self.bt_igual.grid(row=4, column=2, sticky="ewns", padx=2, pady=2)
-        self.bt_limpar.grid(row=5, column=0, columnspan=2, sticky="ewns", padx=2, pady=2)
-        self.bt_sair.grid(row=5, column=2, columnspan=2, sticky="ewns", padx=2, pady=2)
+        self.bt_addition.grid(row=3, column=3, sticky="ewns", padx=2, pady=2)
+        self.bt_subtraction.grid(row=2, column=3, sticky="ewns", padx=2, pady=2)
+        self.bt_division.grid(row=4, column=3, sticky="ewns", padx=2, pady=2)
+        self.bt_mutiplication.grid(row=1, column=3, sticky="ewns", padx=2, pady=2)
+        self.bt_decimal_point.grid(row=4, column=1, sticky="ewns", padx=2, pady=2)
+        self.bt_equal.grid(row=4, column=2, sticky="ewns", padx=2, pady=2)
+        self.bt_delete.grid(row=5, column=3, sticky="wens", padx=2, pady=2)
+        self.bt_clear.grid(row=5, column=2,sticky="ewns", padx=2, pady=2)
+        self.bt_quit.grid(row=5, column=0,columnspan=2,sticky="ewns", padx=2, pady=2)
 
     #limpa o display    
-    def limpar(self):
+    def clear(self):
         self.display_stringvar.set("")
         self.decimal_point_open = False
-
+    
+    #apaga o ultimo elemento
+    def delete(self):
+        str_now = self.display_stringvar.get()
+        str_size = len(str_now)
+        new_string = ""        
+        if str_size > 0:
+            for index in range(0,len(str_now)):
+                if not index == str_size-1:
+                    new_string += str_now[index]
+            self.display_stringvar.set(new_string)
+            
     #tela sobre
     def about(self):
         about_window = tk.Toplevel(self.parent)
@@ -160,7 +173,7 @@ class Calc():
 
     def prepare_expression(self):
         elementos = []
-        indice = 0
+        index = 0
         for char in self.display_stringvar.get():
             #inicializa a lista com o primeiro numero
             if len(elementos) == 0 and char in "0123456789":
@@ -168,12 +181,12 @@ class Calc():
             #novo operador como novo elemento da lista
             elif len(elementos) > 0 and char in "+-*/":
                 elementos.append(char)
-                indice += 1
-            elif elementos[indice] in "+-*/":
+                index += 1
+            elif elementos[index] in "+-*/":
                 elementos.append(char)
-                indice += 1
+                index += 1
             else:
-                elementos[indice] += char
+                elementos[index] += char
         #salva a expressão preparada como atributo do objeto
         self.math_expression = elementos
 
@@ -182,39 +195,38 @@ class Calc():
         self.prepare_expression()
         # multiplicação e divisão, precedencia: o que vier primeiro da esquerda para a direita
         while "*" in self.math_expression or "/" in self.math_expression:
-            indice = 0
+            index = 0
             for element in self.math_expression:
                 if element in '/*':
-                    v1 = float(self.math_expression[indice - 1])
-                    v2 = float(self.math_expression[indice + 1])
-                if element == '*':
-                    result = str(v1 * v2)
-                elif element == '/':
-                    result = str(v1 / v2)
-                if element in '/*':
-                    self.math_expression[indice] = result
-                    self.math_expression.pop(indice + 1)
-                    self.math_expression.pop(indice - 1)
+                    v1 = float(self.math_expression[index - 1])
+                    v2 = float(self.math_expression[index + 1])
+                    if element == '*':
+                        result = str(v1 * v2)
+                    elif element == '/':
+                        result = str(v1 / v2)
+                    self.math_expression[index] = result
+                    self.math_expression.pop(index + 1)
+                    self.math_expression.pop(index - 1)
                     break
-                indice += 1
+                index += 1
         # soma e subtração
         # repete até que sobre apenas o resultado
         while len(self.math_expression) > 1:
-            indice = 0
+            index = 0
             for element in self.math_expression:
                 if element in '+-':
-                    v1 = float(self.math_expression[indice - 1])
-                    v2 = float(self.math_expression[indice + 1])
+                    v1 = float(self.math_expression[index - 1])
+                    v2 = float(self.math_expression[index + 1])
                 if element == '+':
                     result = str(v1 + v2)
                 if element == '-':
                     result = str(v1 - v2)
                 if element in '-+':
-                    self.math_expression[indice] = result
-                    self.math_expression.pop(indice + 1)
-                    self.math_expression.pop(indice - 1)
+                    self.math_expression[index] = result
+                    self.math_expression.pop(index + 1)
+                    self.math_expression.pop(index - 1)
                     break
-                indice += 1
+                index += 1
         final_result = str(round(float(self.math_expression[0]), 1))
         #insere o resultado no display
         self.display_stringvar.set(final_result)
